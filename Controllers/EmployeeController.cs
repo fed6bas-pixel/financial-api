@@ -21,12 +21,11 @@ namespace YourApi.Controllers
         public async Task<IActionResult> Complete(string transactionNumber)
         {
             var booking = await _context.Bookings
-                .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber);
+                .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber && !x.IsDeleted);
 
             if (booking == null)
-                return NotFound();
+                return NotFound(new { message = "المعاملة غير موجودة أو محذوفة" });
 
-            // ✔ تغيير الحالة إلى Approved
             booking.Status = BookingStatus.Approved;
 
             await _context.SaveChangesAsync();
@@ -38,19 +37,19 @@ namespace YourApi.Controllers
         [HttpGet("today-bookings")]
         public async Task<IActionResult> GetToday()
         {
-            var today = DateTime.UtcNow.Date; //BookingDate = bookingDate.ToDateTime(TimeOnly.MinValue),
+            var today = DateTime.UtcNow.Date;
 
             var data = await _context.Bookings
-                .Where(b => b.BookingDate.Date == today)
+                .Where(b => b.BookingDate.Date == today && !b.IsDeleted)
+                .OrderBy(b => b.BookingDate)
                 .Select(b => new
                 {
-                   // b.Id,
+                    b.TransactionNumber,
                     b.SellerName,
                     b.BuyerName,
                     b.PropertyNumber,
-                    b.TransactionNumber,
-                    Status = (int)b.Status, 
                     b.BookingDate,
+                    Status = (int)b.Status,
                     Source = "active"
                 })
                 .ToListAsync();
@@ -62,9 +61,9 @@ namespace YourApi.Controllers
         [HttpGet("search/{transactionNumber}")]
         public async Task<IActionResult> SearchTransaction(string transactionNumber)
         {
-            // 🔵 1. البحث في الحجوزات الأساسية
+            // 🔵 البحث في النشطة فقط
             var booking = await _context.Bookings
-                .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber);
+                .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber && !x.IsDeleted);
 
             if (booking != null)
             {
@@ -73,16 +72,14 @@ namespace YourApi.Controllers
                     booking.TransactionNumber,
                     booking.SellerName,
                     booking.BuyerName,
-                    Source = "active",
                     booking.PropertyNumber,
-                    booking.BookingDate, 
-                    Status = (int)booking.Status  , // ✔ رقم مو string /*  *//
-                               
-                  //  Source = "active"
+                    booking.BookingDate,
+                    Status = (int)booking.Status,
+                    Source = "active"
                 });
             }
 
-            // 🔴 2. البحث في المحذوفات
+            // 🔴 البحث في الأرشيف
             var deleted = await _context.DeletedBookings
                 .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber);
 
@@ -93,8 +90,10 @@ namespace YourApi.Controllers
                     deleted.TransactionNumber,
                     deleted.SellerName,
                     deleted.BuyerName,
-                    Source = "deleted",
-                    Status = 2 // ✔ محذوفة ثابتة
+                    deleted.PropertyNumber,
+                    deleted.BookingDate,
+                    Status = 2,
+                    Source = "deleted"
                 });
             }
 
@@ -106,12 +105,12 @@ namespace YourApi.Controllers
         public async Task<IActionResult> Delete(string transactionNumber)
         {
             var booking = await _context.Bookings
-                .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber);
+                .FirstOrDefaultAsync(x => x.TransactionNumber == transactionNumber && !x.IsDeleted);
 
             if (booking == null)
-                return NotFound();
+                return NotFound(new { message = "المعاملة غير موجودة أو محذوفة مسبقاً" });
 
-            // ✔ نقل إلى جدول المحذوفات
+            // نقل إلى الأرشيف
             var deleted = new DeletedBookings
             {
                 UserId = booking.UserId,
@@ -120,12 +119,13 @@ namespace YourApi.Controllers
                 PropertyNumber = booking.PropertyNumber,
                 BookingDate = booking.BookingDate,
                 TransactionNumber = booking.TransactionNumber,
-                DeletedAt = DateTime.Now
+                DeletedAt = DateTime.UtcNow
             };
 
             _context.DeletedBookings.Add(deleted);
 
-            // _context.Bookings.Remove(booking);2 تعديل غير معروف 
+
+            // Soft Delete
             booking.IsDeleted = true;
             booking.Status = BookingStatus.Rejected;
 

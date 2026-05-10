@@ -21,7 +21,7 @@ namespace Malia.Models
         public string TransactionNumber { get; set; }
        
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
-        public bool IsDeleted { get; set; } = false; //1 تعديل غير معروف 
+        public bool IsDeleted { get; set; } = false; 
 
     }
 }

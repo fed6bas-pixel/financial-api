@@ -52,11 +52,18 @@ namespace Malia.Controllers
                 .Where(x => x.BookingDate.Date == today)
                 .Select(x => new BookingDto
                 {
-                    TransactionNumber = x.TransactionNumber,
+                    
+                      TransactionNumber = x.TransactionNumber,
                     BookingDate = x.BookingDate,
                     SellerName = x.SellerName,
                     BuyerName = x.BuyerName,
-                    PropertyNumber = x.PropertyNumber
+                    PropertyNumber = x.PropertyNumber ,
+                       TimeSlot = x.TimeSlot,
+                    //  Status = x.Status.ToString()
+                    Status = x.Status == BookingStatus.Pending ? "قيد الانتظار" :
+             x.Status == BookingStatus.Approved ? "مقبول" :
+             x.Status == BookingStatus.Rejected ? "مرفوض" :
+             "غير معروف"
                 })
                 .ToList();
 

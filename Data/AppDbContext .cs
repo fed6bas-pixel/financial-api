@@ -13,12 +13,10 @@ namespace Malia.Data
         }
 
         public DbSet<BookingDay> BookingDays { get; set; }
-        //public DbSet<Booking> Bookings { get; set; }
         public DbSet<Booking> Bookings { get; set; }
-     //   public DbSet<Booking> Bookings { get; set; }
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<DeletedBookings> DeletedBookings { get; set; }
-       // public DbSet<Employee> Employees { get; set; } 
+      
 
     }
 }
