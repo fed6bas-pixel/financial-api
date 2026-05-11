@@ -17,19 +17,12 @@ builder.WebHost.UseUrls("http://0.0.0.0:10000");
 //builder.Services.AddDbContext<AppDbContext>(options =>
 //options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 // ================= DB =================
+var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-if (string.IsNullOrEmpty(databaseUrl))
+if (string.IsNullOrEmpty(connString))
 {
-    throw new Exception("DATABASE_URL is not set");
+    throw new Exception("DefaultConnection is missing");
 }
-
-var connString = new Npgsql.NpgsqlConnectionStringBuilder(databaseUrl)
-{
-    SslMode = Npgsql.SslMode.Require,
-    TrustServerCertificate = true
-}.ConnectionString;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connString));
