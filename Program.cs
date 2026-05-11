@@ -134,11 +134,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ================= PIPELINE =================
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// ================= PIPELINE =================
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 //app.UseHttpsRedirection();
 
@@ -146,5 +145,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", () => "Malia API is running successfully 🚀");
 
 app.Run();
