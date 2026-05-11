@@ -26,6 +26,7 @@ if (string.IsNullOrEmpty(databaseUrl))
 }
 
 var uri = new Uri(databaseUrl);
+
 var userInfo = uri.UserInfo.Split(':');
 
 var connectionString =
@@ -38,7 +39,6 @@ var connectionString =
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-
 // ================= IDENTITY =================
 builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
