@@ -25,20 +25,14 @@ if (string.IsNullOrEmpty(databaseUrl))
     throw new Exception("DATABASE_URL is not set");
 }
 
-var uri = new Uri(databaseUrl);
-
-var userInfo = uri.UserInfo.Split(':');
-
-var connectionString =
-    $"Host={uri.Host};" +
-    $"Port={uri.Port};" +
-    $"Database={uri.AbsolutePath.Trim('/')};" +
-    $"Username={userInfo[0]};" +
-    $"Password={userInfo[1]};" +
-    $"SSL Mode=Require;Trust Server Certificate=true";
+var connString = new Npgsql.NpgsqlConnectionStringBuilder(databaseUrl)
+{
+    SslMode = Npgsql.SslMode.Require,
+    TrustServerCertificate = true
+}.ConnectionString;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connString));
 // ================= IDENTITY =================
 builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
