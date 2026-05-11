@@ -14,8 +14,30 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:10000");
 
 // ================= DB =================
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ================= DB =================
+
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrEmpty(databaseUrl))
+{
+    throw new Exception("DATABASE_URL is not set");
+}
+
+var uri = new Uri(databaseUrl);
+var userInfo = uri.UserInfo.Split(':');
+
+var connectionString =
+    $"Host={uri.Host};" +
+    $"Port={uri.Port};" +
+    $"Database={uri.AbsolutePath.Trim('/')};" +
+    $"Username={userInfo[0]};" +
+    $"Password={userInfo[1]};" +
+    $"SSL Mode=Require;Trust Server Certificate=true";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // ================= IDENTITY =================
 builder.Services.AddIdentity<User, IdentityRole<int>>()
