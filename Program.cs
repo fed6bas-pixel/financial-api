@@ -124,12 +124,12 @@ using (var scope = app.Services.CreateScope())
             Role = UserRole.Admin
         };
 
-        admin.PasswordHash = hasher.HashPassword(admin, "123456");
+        admin.PasswordHash = hasher.HashPassword(admin, "fedaa@2020");
 
         context.Users.Add(admin);
         context.SaveChanges();
 
-        Console.WriteLine("🔥 Admin created: username=admin password=123456");
+        Console.WriteLine("🔥 Admin created: username=admin password=fedaa@2020");
     }
 }
 
