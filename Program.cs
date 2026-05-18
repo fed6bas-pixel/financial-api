@@ -114,23 +114,34 @@ using (var scope = app.Services.CreateScope())
     var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
 
     context.Database.Migrate();
+    //------
+    var admin = context.Users.FirstOrDefault(u => u.Role == UserRole.Admin);
 
-    if (!context.Users.Any(u => u.Role == UserRole.Admin))
+    if (admin != null)
     {
-        var admin = new User
-        {
-            UserName = "admin",
-            FullName = "System Admin",
-            Role = UserRole.Admin
-        };
-
         admin.PasswordHash = hasher.HashPassword(admin, "fedaa@2020");
 
-        context.Users.Add(admin);
         context.SaveChanges();
 
-        Console.WriteLine("🔥 Admin created: username=admin password=fedaa@2020");
+        Console.WriteLine("🔥 Admin password updated");
     }
+
+    /*  if (!context.Users.Any(u => u.Role == UserRole.Admin))
+     {
+         var admin = new User
+         {
+             UserName = "admin",
+             FullName = "System Admin",
+             Role = UserRole.Admin
+         };
+
+         admin.PasswordHash = hasher.HashPassword(admin, "fedaa@2020");
+
+         context.Users.Add(admin);
+         context.SaveChanges();
+
+         Console.WriteLine("🔥 Admin created: username=admin password=fedaa@2020");
+     } */
 }
 
 // ================= PIPELINE =================
